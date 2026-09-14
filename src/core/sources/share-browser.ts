@@ -243,7 +243,7 @@ export async function extractViaBrowser(provider: ShareProvider, url: string, ur
     return {
       nativeId: `share-${urlId}`,
       source: providerSource(provider),
-      title: cleanTitle(title) || firstUser.slice(0, 60) || '(untitled)',
+      title: cleanTitle(title) || firstUser.slice(0, 60) || '（无标题）',
       startedAt,
       endedAt,
       messages,

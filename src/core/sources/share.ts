@@ -168,7 +168,7 @@ export function parseKimiShareApi(raw: unknown, urlId: string): CommonSession | 
     if (!content && !thinks.length) continue;
     messages.push({
       role: m.role,
-      content: content || '(no content)',
+      content: content || '（无正文）',
       ...(thinks.length ? { thinking: thinks.join('\n\n').trim() } : {}),
       ...(tools.length ? { toolCalls: tools } : {}),
       ...(m.createTime ? { createdAt: m.createTime } : {}),
@@ -180,7 +180,7 @@ export function parseKimiShareApi(raw: unknown, urlId: string): CommonSession | 
   return {
     nativeId: `share-${urlId}`,
     source: 'kimi',
-    title: share?.chat?.name?.trim() || truncate(firstUser, 60) || '(untitled)',
+    title: share?.chat?.name?.trim() || truncate(firstUser, 60) || '（无标题）',
     startedAt: messages[0]?.createdAt ?? share?.createTime,
     endedAt: messages[messages.length - 1]?.createdAt ?? share?.createTime,
     messages,
@@ -198,7 +198,7 @@ export function extractShareConversation(
   html: string,
   urlId: string
 ): CommonSession | null {
-  const title = extractTitle(html) || `Shared session ${urlId.slice(0, 8)}`;
+  const title = extractTitle(html) || `分享会话 ${urlId.slice(0, 8)}`;
   if (provider !== 'chatgpt') return null; // kimi/grok/gemini await structured rules (need real rendered-DOM traits)
   const messages = extractChatGptShare(html);
   if (!messages.length) return null;
@@ -207,7 +207,7 @@ export function extractShareConversation(
   return {
     nativeId: `share-${urlId}`,
     source: providerSource(provider),
-    title: title.replace(/\s*[|-]\s*(ChatGPT|Kimi|Grok).*$/i, '').trim() || truncate(firstUser, 60) || '(untitled)',
+    title: title.replace(/\s*[|-]\s*(ChatGPT|Kimi|Grok).*$/i, '').trim() || truncate(firstUser, 60) || '（无标题）',
     startedAt: undefined,
     endedAt: undefined,
     messages,

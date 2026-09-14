@@ -73,7 +73,7 @@ export class GeminiCliAdapter implements LocalSourceAdapter {
     return {
       nativeId,
       source: this.source,
-      title: truncate(firstUser, 60) || '(untitled)',
+      title: truncate(firstUser, 60) || '（无标题）',
       project: path.basename(path.dirname(path.dirname(filePath))),
       startedAt: chat.startTime ?? messages[0]?.createdAt,
       endedAt: chat.lastUpdated ?? messages[messages.length - 1]?.createdAt,

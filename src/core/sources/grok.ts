@@ -108,7 +108,7 @@ export function parseConversationMarkdown(
     }
     pushMsg();
 
-    const title = block.title || truncate(messages.find((m) => m.role === 'user')?.content ?? '', 60) || '(untitled)';
+    const title = block.title || truncate(messages.find((m) => m.role === 'user')?.content ?? '', 60) || '（无标题）';
     if (!messages.length) {
       // no role markers: the whole block becomes a single note
       const content = block.lines.join('\n').trim();

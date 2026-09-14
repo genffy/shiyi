@@ -44,15 +44,15 @@ function renderBody(
   const parts: string[] = [];
   for (const m of messages) {
     const ts = m.created_at ? ` · ${m.created_at.slice(0, 16).replace('T', ' ')}` : '';
-    parts.push(`## ${m.role === 'user' ? 'Me' : 'Assistant'}${ts}\n\n${m.content}\n`);
+    parts.push(`## ${m.role === 'user' ? '我' : '助手'}${ts}\n\n${m.content}\n`);
     if (m.thinking) {
-      parts.push(`<details><summary>Thinking</summary>\n\n${m.thinking}\n\n</details>\n`);
+      parts.push(`<details><summary>思考过程</summary>\n\n${m.thinking}\n\n</details>\n`);
     }
     if (m.tool_calls_json) {
       const calls = JSON.parse(m.tool_calls_json) as Array<{ name: string; brief: string }>;
       if (calls.length) {
         parts.push(
-          `<details><summary>${calls.length} tool calls</summary>\n\n${calls
+          `<details><summary>${calls.length} 次工具调用</summary>\n\n${calls
             .map((c) => `- \`${c.name}\`${c.brief ? ` — ${c.brief}` : ''}`)
             .join('\n')}\n\n</details>\n`
         );

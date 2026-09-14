@@ -212,7 +212,7 @@ export class CodexAdapter implements LocalSourceAdapter {
     return {
       nativeId,
       source: this.source,
-      title: truncate(titleSource, 60) || truncate(all.find((m) => m.role === 'assistant')?.content ?? '', 60) || '(untitled)',
+      title: truncate(titleSource, 60) || truncate(all.find((m) => m.role === 'assistant')?.content ?? '', 60) || '（无标题）',
       project: cwd,
       startedAt,
       endedAt,

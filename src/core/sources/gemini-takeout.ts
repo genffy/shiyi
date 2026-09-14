@@ -57,7 +57,7 @@ export function parseGeminiTakeout(text: string): CommonSession[] {
     out.push({
       nativeId: stableId(c.title ?? c.name ?? '', firstUser.slice(0, 200)),
       source: 'gemini-web',
-      title: (c.title ?? c.name ?? '').toString().trim() || truncate(firstUser, 60) || '(untitled)',
+      title: (c.title ?? c.name ?? '').toString().trim() || truncate(firstUser, 60) || '（无标题）',
       startedAt: started,
       endedAt: messages[messages.length - 1]?.createdAt ?? started,
       messages,

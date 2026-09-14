@@ -177,7 +177,7 @@ export class ClaudeCodeAdapter implements LocalSourceAdapter {
     return {
       nativeId,
       source: this.source,
-      title: aiTitle || truncate(firstUser, 60) || '(untitled)',
+      title: aiTitle || truncate(firstUser, 60) || '（无标题）',
       project: projectDir ?? unmngeProjectDir(path.basename(path.dirname(filePath))),
       startedAt: firstTs,
       endedAt: lastTs,

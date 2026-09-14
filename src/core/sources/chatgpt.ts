@@ -66,7 +66,7 @@ export function chatgptConversationToSession(convRaw: Record<string, unknown>): 
   return {
     nativeId: conv.conversation_id ?? stableId(conv.title ?? '', firstUser),
     source: 'chatgpt',
-    title: conv.title?.trim() || truncate(firstUser, 60) || '(untitled)',
+    title: conv.title?.trim() || truncate(firstUser, 60) || '（无标题）',
     startedAt: toIso(conv.create_time) ?? messages[0]?.createdAt,
     endedAt: toIso(conv.update_time) ?? messages[messages.length - 1]?.createdAt,
     messages,
@@ -116,7 +116,7 @@ export function parseChatGptCodexJson(text: string): CommonSession[] {
     out.push({
       nativeId: task.id ?? stableId(task.title ?? '', firstUser),
       source: 'codex',
-      title: task.title?.trim() || truncate(firstUser, 60) || '(untitled)',
+      title: task.title?.trim() || truncate(firstUser, 60) || '（无标题）',
       startedAt: started,
       endedAt: messages[messages.length - 1]?.createdAt ?? started,
       messages,

@@ -134,7 +134,7 @@ export class ShiYiDb {
           id,
           session.nativeId,
           session.source,
-          session.title || truncate(body || '(no content)', 60),
+          session.title || truncate(body || '（无内容）', 60),
           session.project ?? null,
           session.startedAt ?? null,
           session.endedAt ?? null,

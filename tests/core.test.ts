@@ -210,9 +210,9 @@ describe('Markdown export', () => {
     expect(text).toContain('source: claude-code');
     expect(text).toContain('title: "build/optimize: test"');
     expect(text).toContain('project: /x/proj');
-    expect(text).toContain('## Me · 2026-09-01 10:00');
-    expect(text).toContain('## Assistant · 2026-09-01 10:05');
-    expect(text).toContain('2 tool calls');
+    expect(text).toContain('## 我 · 2026-09-01 10:00');
+    expect(text).toContain('## 助手 · 2026-09-01 10:05');
+    expect(text).toContain('2 次工具调用');
     expect(text).toContain('`Bash` — pnpm build');
 
     // export again: same-name file skipped

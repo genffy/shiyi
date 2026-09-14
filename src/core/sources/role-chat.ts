@@ -73,7 +73,7 @@ export function parseRoleChat(text: string, source: SourceId): CommonSession[] {
     out.push({
       nativeId: item.conversationId ?? item.conversation_id ?? item.chat_id ?? item.id ?? stableId(item.title ?? item.name ?? '', firstUser.slice(0, 200)),
       source,
-      title: (item.title ?? item.name ?? '').toString().trim() || truncate(firstUser, 60) || '(untitled)',
+      title: (item.title ?? item.name ?? '').toString().trim() || truncate(firstUser, 60) || '（无标题）',
       startedAt: started,
       endedAt: messages[messages.length - 1]?.createdAt ?? started,
       messages,
