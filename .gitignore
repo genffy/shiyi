@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build output (vite build; rebuild anytime with pnpm build)
+dist-web/
+coverage/
+
+# ZCode session artifacts
+.zcode/
+
+# playwright test artifacts (if e2e is added later)
+test-results/
+playwright-report/
+
+# env & local config
+.env
+.env.*
+!.env.example
+
+# OS & logs
+.DS_Store
+*.log
+*.tsbuildinfo
