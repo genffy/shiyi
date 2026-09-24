@@ -1,6 +1,7 @@
 import chokidar from 'chokidar';
 import fs from 'node:fs';
 import { ShiYiDb } from './db.js';
+import { syncLocalSources } from './sync.js';
 import type { LocalSourceAdapter, LocalSourceFile } from './types.js';
 
 export interface WatchEvent {
@@ -14,15 +15,33 @@ export interface WatchEvent {
  * Returns { stop, recent, onEvent }; recent feeds the recent-sync display of /api/stats.
  */
 export function startWatcher(db: ShiYiDb, adapters: LocalSourceAdapter[]) {
-  const dirs = [...new Set(adapters.flatMap((a) => a.watchRoots()))];
+  const dirs = [...new Set(adapters.filter((a) => !a.watchFiles).flatMap((a) => a.watchRoots()))];
   const recent: WatchEvent[] = [];
   const listeners = new Set<(e: WatchEvent) => void>();
+  const aggregateRuns = new Map<LocalSourceAdapter, { running: boolean; pending: boolean }>();
 
   const findAdapter = (p: string) => adapters.find((a) => a.acceptsPath(p));
 
   const process = async (filePath: string) => {
     const adapter = findAdapter(filePath);
     if (!adapter) return;
+    if (adapter.syncOnChange) {
+      const state = aggregateRuns.get(adapter) ?? { running: false, pending: false };
+      aggregateRuns.set(adapter, state);
+      state.pending = true;
+      if (state.running) return;
+      state.running = true;
+      try {
+        while (state.pending) {
+          state.pending = false;
+          const [result] = await syncLocalSources(db, [adapter]);
+          if (result?.parsed) push({ source: adapter.source, path: filePath, action: 'upserted' });
+        }
+      } finally {
+        state.running = false;
+      }
+      return;
+    }
     let st: fs.Stats;
     try {
       st = fs.statSync(filePath);
@@ -59,13 +78,20 @@ export function startWatcher(db: ShiYiDb, adapters: LocalSourceAdapter[]) {
     ignored: (p: string) => /(^|\/)\.(git|DS_Store)/.test(p) || p.endsWith('.sock'),
   });
 
-  const ready = new Promise<void>((resolve) => {
+  const ready = dirs.length ? new Promise<void>((resolve) => {
     watcher.on('ready', () => resolve());
-  });
+  }) : Promise.resolve();
 
   watcher.on('add', process).on('change', process).on('error', (err: unknown) => {
     console.warn(`[watch] ${(err as Error).message}`);
   });
+
+  const polledFiles = adapters.flatMap((a) => a.watchFiles?.() ?? []);
+  for (const file of polledFiles) {
+    fs.watchFile(file, { interval: 1000 }, (current, previous) => {
+      if (current.mtimeMs !== previous.mtimeMs || current.size !== previous.size) void process(file);
+    });
+  }
 
   return {
     ready,
@@ -75,6 +101,7 @@ export function startWatcher(db: ShiYiDb, adapters: LocalSourceAdapter[]) {
       return () => listeners.delete(fn);
     },
     async stop() {
+      for (const file of polledFiles) fs.unwatchFile(file);
       await watcher.close();
     },
   };

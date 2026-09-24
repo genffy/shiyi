@@ -28,6 +28,12 @@ export async function buildApp({ db, adapters, watchInfo }: BuildAppOptions) {
     };
   });
 
+  app.get('/api/analytics', async (req, reply) => {
+    const q = req.query as Record<string, string | undefined>;
+    if (!q['source'] || !VALID_SOURCES.has(q['source'])) return reply.code(400).send({ error: 'valid source required' });
+    return db.sourceAnalytics(q['source'] as SourceId);
+  });
+
   app.get('/api/sessions', async (req, reply) => {
     const q = req.query as Record<string, string | undefined>;
     const source = q['source'] && VALID_SOURCES.has(q['source']) ? (q['source'] as SourceId) : undefined;

@@ -1,10 +1,14 @@
 # shiyi（拾遗）
 
-Centralize the AI chats scattered across every tool you use: local Claude Code / Codex / Gemini CLI
+Centralize the AI chats scattered across every tool you use: local Claude Code / Codex / Gemini CLI / ZCode
 sessions sync automatically, ChatGPT / Gemini Web / Kimi / Grok exports import in one command,
 everything is full-text searchable, exportable as Markdown — a personal knowledge base built over time.
 
-All data stays 100% on your machine (`~/.shiyi/shiyi.db`, SQLite + FTS5). Nothing is sent anywhere.
+Imported sessions are stored on your machine (`~/.shiyi/shiyi.db`, SQLite + FTS5). Local sync reads local files; importing a share URL fetches the public page you provide.
+
+![shiyi session browser preview (conversation content redacted)](./docs/images/preview.png)
+
+The screenshot uses synthetic sessions and Privacy Preview. Toggle **隐私预览** in the web UI, or open `http://127.0.0.1:7420/?privacy=1`, to replace session text, dates and counts with placeholders before taking a screenshot. This changes the rendered view only; it is not access control.
 
 ## Quick start
 
@@ -16,8 +20,9 @@ pnpm serve            # start http://127.0.0.1:7420 (with file-watching auto-syn
 ```
 
 Day-to-day you only need `pnpm serve`: while it runs, new sessions are picked up automatically
-(changes under `~/.claude/projects`, `~/.codex/sessions`, `~/.gemini/tmp` are imported after a 2s
-debounce); cloud export packages dropped into `~/.shiyi/inbox/` are processed automatically too.
+(changes under `~/.claude/projects`, `~/.codex/sessions`, and `~/.gemini/tmp` are imported after a 2s
+debounce; ZCode's `~/.zcode/cli/db/db.sqlite` is polled every second); cloud export packages dropped
+into `~/.shiyi/inbox/` are processed automatically too.
 
 ## Data sources
 
@@ -26,6 +31,7 @@ debounce); cloud export packages dropped into `~/.shiyi/inbox/` are processed au
 | Claude Code | automatic (`~/.claude/projects/`) | uses AI-generated titles; filters tool-result/sidechain noise |
 | Codex | automatic (`~/.codex/sessions/` + `archived_sessions/`) | streaming parse, skips base64 images; filters AGENTS.md/IDE injections |
 | Gemini CLI | automatic (`~/.gemini/tmp/*/chats/`) | |
+| ZCode | automatic (`~/.zcode/cli/db/db.sqlite`) | imports top-level visible sessions, text, reasoning and tool-call summaries; source filter shows activity and project analysis |
 | ChatGPT | import the export zip or the extracted conversations.json | Settings → Data Controls → Export data; `shiyi import xxx.zip` (zip or extracted conversations.json both work); `codex.json` inside the export (cloud Codex tasks) is recognized too |
 | Gemini Web | import the Takeout zip | takeout.google.com → select only My Activity → Gemini Apps; `shiyi import takeout.zip` |
 | Kimi | import Markdown/JSON | **No official export exists in the web/app** (verified 2026-09: no data-export entry in settings). Practical paths: ① a browser extension that exports MD; ② manually copy the conversation into a Markdown file. Import with `shiyi import kimi.md -s kimi` (`## 用户`/`## Kimi` sections are auto-detected); role-structured JSON is auto-detected too |
@@ -84,10 +90,10 @@ src/
 ├── core/
 │   ├── db.ts          # SQLite schema (sessions/messages/sessions_fts) + queries
 │   ├── sync.ts        # incremental sync (raw_size/mtime fingerprints skip unchanged files)
-│   ├── watcher.ts     # chokidar watches local session dirs → debounce → incremental import
+│   ├── watcher.ts     # chokidar watches session files; database changes are polled
 │   ├── import.ts      # cloud export import orchestration + inbox auto-processing
 │   ├── export.ts      # Markdown export
-│   └── sources/       # one adapter per source (3 local + 4 cloud)
+│   └── sources/       # one adapter per source (4 local + 4 cloud)
 ├── api/server.ts      # Fastify (JSON API + static frontend)
 ├── cli/index.ts       # commander CLI
 └── web/               # Vite + React frontend (two-pane: list + detail; tool calls & thinking collapsed)
@@ -97,11 +103,11 @@ tests/                 # vitest: adapter parsing / sync engine / importers / wat
 ## Tests
 
 ```bash
-pnpm test              # 44 cases
+pnpm test              # 47 cases
 pnpm test:coverage     # coverage (core logic ~80%; the web frontend is verified manually in a browser, not unit-tested)
 ```
 
-Coverage: message extraction and noise filtering for the three local adapters (synthetic JSONL
+Coverage: message extraction and noise filtering for the four local adapters (synthetic JSONL/SQLite
 fixtures), incremental-sync fingerprint skipping and full rebuild, all cloud import formats
 (including ChatGPT edited branches and Grok multi-format), inbox auto-processing and file moving,
 watcher real-filesystem integration, all Fastify routes (including trigram search and the short-query
@@ -110,7 +116,7 @@ LIKE fallback), Markdown export format.
 ## Phase 2 (not implemented)
 
 - `shiyi enrich`: LLM-generated session summaries/tags (`sessions.summary` / `sessions.tags` columns reserved)
-- More local sources: ZCode (`~/.zcode`), OpenCode (sqlite), Cursor (sqlite)
+- More local sources: OpenCode (sqlite), Cursor (sqlite)
 - X bookmarks; automated cloud-session scraping
 
 ## Known limits

@@ -7,6 +7,7 @@ import { syncLocalSources } from '../core/sync.js';
 import { ClaudeCodeAdapter } from '../core/sources/claude-code.js';
 import { CodexAdapter } from '../core/sources/codex.js';
 import { GeminiCliAdapter } from '../core/sources/gemini-cli.js';
+import { ZcodeAdapter } from '../core/sources/zcode.js';
 import { SOURCE_LABELS, type LocalSourceAdapter, type SourceId } from '../core/types.js';
 
 const program = new Command();
@@ -14,12 +15,12 @@ const program = new Command();
 program.name('shiyi').description('shiyi（拾遗）— unify AI chat sessions into a personal knowledge base').version('0.1.0');
 
 function localAdapters(): LocalSourceAdapter[] {
-  return [new ClaudeCodeAdapter(), new CodexAdapter(), new GeminiCliAdapter()];
+  return [new ClaudeCodeAdapter(), new CodexAdapter(), new GeminiCliAdapter(), new ZcodeAdapter()];
 }
 
 program
   .command('sync')
-  .description('incrementally sync local session sources (Claude Code / Codex / Gemini CLI) and process cloud exports in inbox/')
+  .description('incrementally sync local session sources (Claude Code / Codex / Gemini CLI / ZCode) and process cloud exports in inbox/')
   .option('--full', 'ignore incremental state, wipe local sources and reparse everything (use after parser-rule upgrades)')
   .action(async (opts: { full?: boolean }) => {
     const db = new ShiYiDb();
@@ -86,7 +87,7 @@ program
     let watcher: Awaited<ReturnType<typeof startWatcher>> | null = null;
     if (opts.watch) {
       watcher = startWatcher(db, adapters);
-      console.log('file watching enabled: claude/codex/gemini-cli session changes are imported automatically');
+      console.log('file watching enabled: claude/codex/gemini-cli/zcode session changes are imported automatically');
     }
     const app = await buildApp({
       db,

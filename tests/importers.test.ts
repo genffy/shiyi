@@ -96,7 +96,7 @@ describe('ChatGPT codex.json (cloud Codex tasks)', () => {
             input_items: [{ role: 'user', content: [{ content_type: 'text', text: 'refactor the export module' }] }],
           },
           {
-            id: 'task_e_68d17133000000000000000000000000~assttrn_e_68d17134000000000000000000000001',
+            id: 'task_e_68d17133000000000000000000000000~assttrn_e_68d17134000000000000000000000000',
             role: 'assistant',
             output_items: [{ content: [{ content_type: 'text', text: '### Summary\n* split into helpers…' }] }],
           },

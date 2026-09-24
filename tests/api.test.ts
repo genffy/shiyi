@@ -35,17 +35,29 @@ describe('API', () => {
       title: '另一个会话',
       messages: [{ role: 'user', content: '别的主题' }],
     });
+    db.upsertSession({
+      nativeId: 'z-1', source: 'zcode', title: '构建分析', project: '/work/demo', startedAt: '2026-09-24T10:00:00.000Z',
+      messages: [
+        { role: 'user', content: '检查构建' },
+        { role: 'assistant', content: '构建正常', toolCalls: [{ name: 'Bash', brief: 'pnpm build' }] },
+      ],
+    });
 
     const app = await buildApp({ db, adapters: [] });
 
     const stats = await app.inject({ method: 'GET', url: '/api/stats' });
     expect(stats.statusCode).toBe(200);
     const statsBody = stats.json();
-    expect(statsBody.total).toBe(2);
+    expect(statsBody.total).toBe(3);
+    expect(statsBody.sources.find((s: { source: string }) => s.source === 'zcode')).toMatchObject({ count: 1, label: 'ZCode' });
+
+    const analytics = await app.inject({ method: 'GET', url: '/api/analytics?source=zcode' });
+    expect(analytics.json()).toMatchObject({ sessions: 1, messages: 2, userMessages: 1, toolCalls: 1, projects: [{ project: '/work/demo', count: 1 }] });
+    expect((await app.inject({ method: 'GET', url: '/api/analytics?source=unknown' })).statusCode).toBe(400);
 
     const list = await app.inject({ method: 'GET', url: '/api/sessions?limit=1' });
     const listBody = list.json();
-    expect(listBody.total).toBe(2);
+    expect(listBody.total).toBe(3);
     expect(listBody.items).toHaveLength(1);
 
     const filtered = await app.inject({ method: 'GET', url: '/api/sessions?source=codex' });

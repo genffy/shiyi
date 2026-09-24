@@ -264,4 +264,45 @@ export class ShiYiDb {
       .prepare('SELECT source, COUNT(*) AS count FROM sessions GROUP BY source ORDER BY count DESC')
       .all() as { source: SourceId; count: number }[];
   }
+
+  sourceAnalytics(source: SourceId): {
+    sessions: number;
+    messages: number;
+    userMessages: number;
+    assistantMessages: number;
+    toolCalls: number;
+    activeDays: number;
+    projects: Array<{ project: string; count: number }>;
+    activity: Array<{ day: string; count: number }>;
+  } {
+    const totals = this.db.prepare(`
+      SELECT COUNT(DISTINCT s.id) AS sessions,
+             COUNT(m.id) AS messages,
+             SUM(CASE WHEN m.role = 'user' THEN 1 ELSE 0 END) AS userMessages,
+             SUM(CASE WHEN m.role = 'assistant' THEN 1 ELSE 0 END) AS assistantMessages,
+             SUM(CASE WHEN m.tool_calls_json IS NOT NULL THEN json_array_length(m.tool_calls_json) ELSE 0 END) AS toolCalls,
+             COUNT(DISTINCT date(s.started_at, 'localtime')) AS activeDays
+      FROM sessions s LEFT JOIN messages m ON m.session_id = s.id WHERE s.source = ?
+    `).get(source) as { sessions: number; messages: number; userMessages: number | null; assistantMessages: number | null; toolCalls: number | null; activeDays: number };
+    const projects = this.db.prepare(`
+      SELECT project, COUNT(*) AS count FROM sessions
+      WHERE source = ? AND project IS NOT NULL AND project != ''
+      GROUP BY project ORDER BY count DESC, project LIMIT 5
+    `).all(source) as Array<{ project: string; count: number }>;
+    const activity = this.db.prepare(`
+      SELECT date(started_at, 'localtime') AS day, COUNT(*) AS count FROM sessions
+      WHERE source = ? AND date(started_at, 'localtime') >= date('now', 'localtime', '-29 days')
+      GROUP BY date(started_at, 'localtime') ORDER BY day
+    `).all(source) as Array<{ day: string; count: number }>;
+    return {
+      sessions: totals.sessions,
+      messages: totals.messages,
+      userMessages: totals.userMessages ?? 0,
+      assistantMessages: totals.assistantMessages ?? 0,
+      toolCalls: totals.toolCalls ?? 0,
+      activeDays: totals.activeDays,
+      projects,
+      activity,
+    };
+  }
 }

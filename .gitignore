@@ -8,6 +8,17 @@ coverage/
 # ZCode session artifacts
 .zcode/
 
+# local session data and exports
+.shiyi/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+/inbox/
+/exports/
+
 # playwright test artifacts (if e2e is added later)
 test-results/
 playwright-report/

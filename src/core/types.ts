@@ -3,6 +3,7 @@ export type SourceId =
   | 'claude-code'
   | 'codex'
   | 'gemini-cli'
+  | 'zcode'
   | 'chatgpt'
   | 'gemini-web'
   | 'kimi'
@@ -12,6 +13,7 @@ export const SOURCE_LABELS: Record<SourceId, string> = {
   'claude-code': 'Claude Code',
   codex: 'Codex',
   'gemini-cli': 'Gemini CLI',
+  zcode: 'ZCode',
   chatgpt: 'ChatGPT',
   'gemini-web': 'Gemini',
   kimi: 'Kimi',
@@ -49,7 +51,7 @@ export interface CommonSession {
   messages: CommonMessage[];
 }
 
-/** adapter for file-based local sources (Claude Code / Codex / Gemini CLI) */
+/** adapter for local session sources, including database-backed virtual files */
 export interface LocalSourceFile {
   path: string;
   size: number;
@@ -58,10 +60,14 @@ export interface LocalSourceFile {
 
 export interface LocalSourceAdapter {
   source: SourceId;
+  /** database-backed adapters rescan their virtual session files when the physical DB changes */
+  syncOnChange?: boolean;
+  /** physical files to poll when the source is a database with virtual session paths */
+  watchFiles?(): string[];
   listFiles(): LocalSourceFile[];
   /** parse one session file; null when unparseable */
   parseFile(path: string): Promise<CommonSession | null>;
-  /** roots the watcher observes (must cover every path listFiles yields; keep unrelated dirs out) */
+  /** roots the watcher observes for file-backed sources; keep unrelated dirs out */
   watchRoots(): string[];
   /** whether a path belongs to this source (watcher callback) */
   acceptsPath(path: string): boolean;

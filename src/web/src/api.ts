@@ -1,9 +1,10 @@
-export type SourceId = 'claude-code' | 'codex' | 'gemini-cli' | 'chatgpt' | 'gemini-web' | 'kimi' | 'grok';
+export type SourceId = 'claude-code' | 'codex' | 'gemini-cli' | 'zcode' | 'chatgpt' | 'gemini-web' | 'kimi' | 'grok';
 
 export const SOURCE_LABELS: Record<SourceId, string> = {
   'claude-code': 'Claude',
   codex: 'Codex',
   'gemini-cli': 'Gemini CLI',
+  zcode: 'ZCode',
   chatgpt: 'ChatGPT',
   'gemini-web': 'Gemini',
   kimi: 'Kimi',
@@ -14,6 +15,7 @@ export const SOURCE_COLORS: Record<SourceId, string> = {
   'claude-code': '#c96442',
   codex: '#7c5cfc',
   'gemini-cli': '#4285f4',
+  zcode: '#15836a',
   chatgpt: '#10a37f',
   'gemini-web': '#4285f4',
   kimi: '#e0413f',
@@ -52,6 +54,23 @@ export interface Stats {
   total: number;
   sources: Array<{ source: SourceId; count: number; label: string }>;
   watching?: boolean;
+}
+
+export interface SourceAnalytics {
+  sessions: number;
+  messages: number;
+  userMessages: number;
+  assistantMessages: number;
+  toolCalls: number;
+  activeDays: number;
+  projects: Array<{ project: string; count: number }>;
+  activity: Array<{ day: string; count: number }>;
+}
+
+export async function fetchAnalytics(source: SourceId): Promise<SourceAnalytics> {
+  const r = await fetch(`/api/analytics?source=${encodeURIComponent(source)}`);
+  if (!r.ok) throw new Error(`analytics ${r.status}`);
+  return r.json();
 }
 
 export async function fetchStats(): Promise<Stats> {

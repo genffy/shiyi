@@ -16,12 +16,13 @@ export function inboxDir(): string {
 }
 
 /** root directories of the local session sources */
-export function localSourceRoots(): Record<'claude' | 'codex' | 'geminiCli', string> {
+export function localSourceRoots(): Record<'claude' | 'codex' | 'geminiCli' | 'zcode', string> {
   const home = os.homedir();
   return {
     claude: path.join(home, '.claude', 'projects'),
     codex: path.join(home, '.codex', 'sessions'),
     geminiCli: path.join(home, '.gemini', 'tmp'),
+    zcode: path.join(home, '.zcode', 'cli', 'db', 'db.sqlite'),
   };
 }
 

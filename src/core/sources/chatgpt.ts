@@ -125,7 +125,7 @@ export function parseChatGptCodexJson(text: string): CommonSession[] {
   return out;
 }
 
-// turn ids look like task_e_68d17133000000000000000000000000~usertrn_e_68d171340000…: the first 8 hex chars after _e_ are epoch seconds
+// turn ids look like task_e_68d17133000000000000000000000000~usertrn_e_68d17134...: the first 8 hex chars after _e_ are epoch seconds
 function hexEpochFromTurnId(id: unknown): string | undefined {
   if (typeof id !== 'string') return undefined;
   const m = id.match(/_e_([0-9a-f]{8})/);
